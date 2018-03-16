@@ -63,7 +63,6 @@ lazy val activityStreamImpl = project("activity-stream-impl")
   .enablePlugins(LagomJava)
   .settings(
     libraryDependencies ++= Seq(
-      lagomJavadslCluster,
       lagomJavadslTestKit
     )
   )
