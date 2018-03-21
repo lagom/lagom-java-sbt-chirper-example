@@ -85,8 +85,10 @@ helm update
 Verify that Helm is available (this takes a minute or two):
 
 ```bash
-kubectl --namespace kube-system get deploy/tiller-deploy
+kubectl --namespace kube-system get -w deploy/tiller-deploy
 ```
+
+> The `-w` flag will watch for changes. Use `CTRL-c` to exit.
 
 ```
 NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
@@ -96,13 +98,15 @@ tiller-deploy   1         1         1            1           3m
 Install the sandbox. Since Chirper only uses Cassandra, we're disabling the other services but you can leave them enabled by omitting the `set` flag if you wish.
 
 ```bash
-helm install lightbend-helm-charts/reactive-sandbox --name reactive-sandbox --set elasticsearch.enabled=false,kafka.enabled=false,zookeeper.enabled=false
+helm install lightbend-helm-charts/reactive-sandbox \
+    --name reactive-sandbox \
+    --set elasticsearch.enabled=false,kafka.enabled=false,zookeeper.enabled=false
 ```
 
 Verify that it is available (this takes a minute or two):
 
 ```bash
-kubectl get deploy/reactive-sandbox
+kubectl get -w deploy/reactive-sandbox
 ```
 
 ```
@@ -129,10 +133,10 @@ Finally, you're ready to deploy the services. Be sure to adjust the secret varia
 ```bash
 # Be sure to change these secret values
 
-chirp_secret="youmustchangeme"
-friend_secret="youmustchangeme"
-activity_stream_secret="youmustchangeme"
-front_end_secret="youmustchangeme"
+chirp_secret="changeme"
+friend_secret="changeme"
+activity_stream_secret="changeme"
+front_end_secret="changeme"
 
 # Default address for reactive-sandbox, change if using external Cassandra
 
@@ -148,7 +152,6 @@ rp generate-kubernetes-resources "chirp-impl:1.0.0-SNAPSHOT" \
   --generate-pod-controllers --generate-services \
   --env JAVA_OPTS="-Dplay.http.secret.key=$chirp_secret -Dplay.filters.hosts.allowed.0=$allowed_host" \
   --external-service "cas_native=$cassandra_svc" \
-  --service-type NodePort \
   --pod-controller-replicas 2 | kubectl apply -f -
 
 # deploy friend-impl
@@ -163,7 +166,8 @@ rp generate-kubernetes-resources "friend-impl:1.0.0-SNAPSHOT" \
 
 rp generate-kubernetes-resources "activity-stream-impl:1.0.0-SNAPSHOT" \
   --generate-pod-controllers --generate-services \
-  --env JAVA_OPTS="-Dplay.http.secret.key=$activity_stream_secret -Dplay.filters.hosts.allowed.0=$allowed_host" | kubectl apply -f -
+  --env JAVA_OPTS="-Dplay.http.secret.key=$activity_stream_secret -Dplay.filters.hosts.allowed.0=$allowed_host" \
+  --pod-controller-replicas 2 | kubectl apply -f -
 
 # deploy front-end
 
@@ -173,12 +177,11 @@ rp generate-kubernetes-resources "front-end:1.0.0-SNAPSHOT" \
 
 # deploy ingress
 rp generate-kubernetes-resources \
-  --ingress-path-suffix '*' \
   --generate-ingress --ingress-name chirper \
-  "$registry/chirp-impl:1.0.0-SNAPSHOT" \
-  "$registry/friend-impl:1.0.0-SNAPSHOT" \
-  "$registry/activity-stream-impl:1.0.0-SNAPSHOT" \
-  "$registry/front-end:1.0.0-SNAPSHOT" | kubectl apply -f -
+  "chirp-impl:1.0.0-SNAPSHOT" \
+  "friend-impl:1.0.0-SNAPSHOT" \
+  "activity-stream-impl:1.0.0-SNAPSHOT" \
+  "front-end:1.0.0-SNAPSHOT" | kubectl apply -f -
 ```
 
 #### 3. Verify Deployment
