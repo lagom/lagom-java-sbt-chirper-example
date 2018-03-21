@@ -16,7 +16,7 @@ You'll need to ensure that the following software is installed:
 
 ### Choose Deployment Type
 
-Once you've set up your environment, you can deploy online auction to Kubernetes. The steps differ depending on whether you want to deploy in a development or production environment.
+Once you've set up your environment, you can deploy Chirper to Kubernetes. The steps differ depending on whether you want to deploy in a development or production environment.
 
 During development, it is simpler to deploy all services with a single sbt task. The *Development Workflow* section describes how to do this. It will build Docker images for each subproject, generate Kubernetes YAML, and deploy them into your Minikube using `kubectl`.
 
