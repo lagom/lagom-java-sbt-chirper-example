@@ -23,7 +23,7 @@ lazy val friendApi = project("friend-api")
   )
 
 lazy val friendImpl = project("friend-impl")
-  .enablePlugins(LagomJava)
+  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
@@ -42,7 +42,7 @@ lazy val chirpApi = project("chirp-api")
   )
 
 lazy val chirpImpl = project("chirp-impl")
-  .enablePlugins(LagomJava)
+  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
@@ -60,7 +60,7 @@ lazy val activityStreamApi = project("activity-stream-api")
   .dependsOn(chirpApi)
 
 lazy val activityStreamImpl = project("activity-stream-impl")
-  .enablePlugins(LagomJava)
+  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomJavadslTestKit
@@ -69,7 +69,7 @@ lazy val activityStreamImpl = project("activity-stream-impl")
   .dependsOn(activityStreamApi, chirpApi, friendApi)
 
 lazy val frontEnd = project("front-end")
-  .enablePlugins(PlayJava, LagomPlay)
+  .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)
   .disablePlugins(PlayLayoutPlugin)
   .settings(
     routesGenerator := InjectedRoutesGenerator,
@@ -111,7 +111,9 @@ lazy val frontEnd = project("front-end")
     WebpackKeys.envVars in webpack += "BUILD_SYSTEM" -> "sbt",
 
     // Remove to use Scala IDE
-    EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
+    EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources),
+
+    httpIngressPaths := Seq("/")
   )
 
 lazy val loadTestApi = project("load-test-api")
@@ -120,7 +122,7 @@ lazy val loadTestApi = project("load-test-api")
   )
 
 lazy val loadTestImpl = project("load-test-impl")
-  .enablePlugins(LagomJava)
+  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
   .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi)
 
 def project(id: String) = Project(id, base = file(id))
