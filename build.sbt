@@ -17,6 +17,12 @@ lazy val buildVersion = sys.props.getOrElse("buildVersion", "1.0.0-SNAPSHOT")
 
 version in ThisBuild := buildVersion
 
+val dockerSettings = Seq(
+  dockerRepository := sys.props.get("dockerRepository"),
+  memory := 512 * 1024 * 1024,
+  cpu := 0.25
+)
+
 lazy val friendApi = project("friend-api")
   .settings(
     libraryDependencies += lagomJavadslApi
@@ -30,6 +36,7 @@ lazy val friendImpl = project("friend-impl")
       lagomJavadslTestKit
     )
   )
+  .settings(dockerSettings: _*)
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(friendApi)
 
@@ -51,6 +58,7 @@ lazy val chirpImpl = project("chirp-impl")
     )
   )
   .settings(lagomForkedTestSettings: _*)
+  .settings(dockerSettings: _*)
   .dependsOn(chirpApi)
 
 lazy val activityStreamApi = project("activity-stream-api")
@@ -66,6 +74,7 @@ lazy val activityStreamImpl = project("activity-stream-impl")
       lagomJavadslTestKit
     )
   )
+  .settings(dockerSettings: _*)
   .dependsOn(activityStreamApi, chirpApi, friendApi)
 
 lazy val frontEnd = project("front-end")
@@ -115,6 +124,7 @@ lazy val frontEnd = project("front-end")
 
     httpIngressPaths := Seq("/")
   )
+  .settings(dockerSettings: _*)
 
 lazy val loadTestApi = project("load-test-api")
   .settings(
@@ -124,6 +134,7 @@ lazy val loadTestApi = project("load-test-api")
 lazy val loadTestImpl = project("load-test-impl")
   .enablePlugins(LagomJava, SbtReactiveAppPlugin)
   .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi)
+  .settings(dockerSettings: _*)
 
 def project(id: String) = Project(id, base = file(id))
   .settings(javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"))
