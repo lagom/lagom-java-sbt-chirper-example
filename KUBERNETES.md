@@ -1,8 +1,6 @@
 ## Running on Kubernetes
 
-This project uses [Lightbend Orchestration for Kubernetes](https://developer.lightbend.com/docs/lightbend-orchestration-kubernetes/latest/) to
-simplify deployment of Chirper to [Kubernetes](https://kubernetes.io/). Follow the steps below to install Chirper in your
-own local Kubernetes environment.
+This project uses [Lightbend Orchestration for Kubernetes](https://developer.lightbend.com/docs/lightbend-orchestration-kubernetes/latest/) to simplify deployment of Chirper to [Kubernetes](https://kubernetes.io/). Follow the steps below to install Chirper in your own local Kubernetes environment.
 
 ### Setup
 
@@ -56,9 +54,7 @@ eval $(minikube docker-env)
 
 > Note that this is an alternative to the Operations workflow documented below.
 
-`sbt-reactive-app` defines a task, `deploy minikube`, that can be used to deploy all aggregated subprojects to
-your running Minikube. It also installs the [Reactive Sandbox](https://github.com/lightbend/reactive-sandbox/) if
-your project needs it, e.g. for Lagom applications that use Cassandra or Kafka.
+`sbt-reactive-app` defines a task, `deploy minikube`, that can be used to deploy all aggregated subprojects to your running Minikube. It also installs the [Reactive Sandbox](https://github.com/lightbend/reactive-sandbox/) if your project needs it, e.g. for Lagom applications that use Cassandra or Kafka.
 
 ##### Build and Deploy Project
 
