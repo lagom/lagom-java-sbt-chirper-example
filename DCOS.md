@@ -1,12 +1,12 @@
 ## Running on DC/OS
 
-This project uses [Lightbend Orchestration for DC/OS](<todo>) to
+This project uses [Lightbend Orchestration](https://developer.lightbend.com/docs/lightbend-orchestration/latest/) to
 simplify deployment of Chirper to [DC/OS](https://dcos.io/). Follow the steps below to install Chirper in your
 own local DC/OS environment.
 
 ### Setup
 
-You'll need to ensure that the following software is installed:
+You'll need to ensure that the following software is installed on your Linux or macOS machine:
 
 * [Docker](https://www.docker.com/)
 * [dcos](https://github.com/dcos/dcos-cli)
