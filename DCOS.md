@@ -14,18 +14,25 @@ You'll need to ensure that the following software is installed:
 
 Additionally, you'll need access to a DC/OS cluster and a Docker registry.
 
-> [dcos-vagrant](https://github.com/dcos/dcos-vagrant) can be used to provision a DC/OS cluster locally. Beware, however:
-it uses a large amount of memory. Success has been achieved with 32GB machines.
-
 Finally, make sure that [Cassandra](https://docs.mesosphere.com/services/cassandra/) and [marathon-lb](https://github.com/mesosphere/marathon-lb)
 are deployed in your cluster.
 
-### Choose Deployment Type
+#### dcos-vagrant
+
+> [dcos-vagrant](https://github.com/dcos/dcos-vagrant) can be used to provision a DC/OS cluster locally. This method does require a lot of memory to run the various DC/OS and Cassandra nodes, however. Success has been achieved with 32GB machines.
+
+`dcos-vagrant` can be configured to deploy a [built-in Docker registry](https://github.com/dcos/dcos-vagrant/blob/master/examples/private-registry.md) by running the following before issuing `vagrant up`:
+
+```bash
+export DCOS_PRIVATE_REGISTRY=true
+```
+
+The registry will then be available on `boot.dcos:5000`.
+
+### Build & Deploy
 
 Once you've set up your environment, you can deploy Chirper to DC/OS. This involves building Docker images and then
 using a CLI tool to generate the DC/OS Marathon configuration.
-
-### Build & Deploy
 
 #### 1. Environment Preparation
 
@@ -60,8 +67,7 @@ sbt "-DdockerRepository=$DOCKER_REPOSITORY" clean docker:publish
 
 #### 3. Deploy Projects
 
-Finally, you're ready to deploy the services. The following commands will generate the marathon configuration for you and
-pipe it to `dcos marathon app add`.
+Finally, you're ready to deploy the services. The following commands will generate the marathon configuration for you and pipe it to `dcos marathon app add`.
 
 Be sure to adjust the secret variables and cassanda service address as necessary. Additionally, you'll want to add
 an entry to `/etc/hosts` pointing "chirper.dcos" to your public node's IP address. In a production environment, this will need to
@@ -72,54 +78,55 @@ be a real DNS entry.
 192.168.65.60   chirper.dcos
 ```
 
-```bash
-# Be sure to change these secret values
+**Configuration**
 
+First, set some variables for the following commands. This defines the secrets for the services, the group to deploy them in, the host where they'll be accessed, and the location of Cassandra. Be sure to change as appropriate for your environment.
+
+```bash
 chirp_secret=changeme
 friend_secret=changeme
 activity_stream_secret=changeme
 front_end_secret=changeme
-
-# Services will be created in this group
-
 dcos_group=chirper
-
-# Default address for DC/OS Universe Cassandra, change if using external Cassandra
-
-cassandra_svc="_native-client._node-0-server._tcp.cassandra.mesos"
-
-# In production, be sure to change this to a specific hostname
-
 host=chirper.dcos
+cassandra_svc="_native-client._node-0-server._tcp.cassandra.mesos"
+```
 
-# deploy chirp-impl
+**Deploy chirp-impl**
 
+```bash
 rp generate-marathon-configuration "$DOCKER_REPOSITORY/chirp-impl:1.0.0-SNAPSHOT" \
   --namespace "$dcos_group" \
   --env JAVA_OPTS="-Dplay.http.secret.key=$chirp_secret -Dplay.filters.hosts.allowed.0=$host" \
   --marathon-lb-host "$host" \
   --external-service "cas_native=$cassandra_svc" \
   --instances 2 | dcos marathon app add
+```
 
-# deploy friend-impl
+**Deploy friend-impl**
 
+```bash
 rp generate-marathon-configuration "$DOCKER_REPOSITORY/friend-impl:1.0.0-SNAPSHOT" \
   --namespace "$dcos_group" \
   --env JAVA_OPTS="-Dplay.http.secret.key=$friend_secret -Dplay.filters.hosts.allowed.0=$host" \
   --marathon-lb-host "$host" \
   --external-service "cas_native=$cassandra_svc" \
   --instances 2 | dcos marathon app add
+```
 
-# deploy activity-stream-impl
+**Deploy activity-stream-impl**
 
+```bash
 rp generate-marathon-configuration "$DOCKER_REPOSITORY/activity-stream-impl:1.0.0-SNAPSHOT" \
   --namespace "$dcos_group" \
   --env JAVA_OPTS="-Dplay.http.secret.key=$activity_stream_secret -Dplay.filters.hosts.allowed.0=$host" \
   --marathon-lb-host "$host" \
   --instances 1 | dcos marathon app add
+```
 
-# deploy front-end
+**Deploy front-end**
 
+```bash
 rp generate-marathon-configuration "$DOCKER_REPOSITORY/front-end:1.0.0-SNAPSHOT" \
   --namespace "$dcos_group" \
   --marathon-lb-host "$host" \
@@ -128,12 +135,12 @@ rp generate-marathon-configuration "$DOCKER_REPOSITORY/front-end:1.0.0-SNAPSHOT"
 
 #### 4. Verify Deployment
 
-Now that you've deployed your services (using either the Developer or Operations workflows), you can use `dcos` to
+Now that you've deployed your services, you can use `dcos` to
 inspect the deployment, and your favorite web browser to use the application.
 
 
 > Open the URL this command prints in the browser
 
 ```bash
-echo "http://chirper.dcos/"
+echo "http://$host/"
 ```
