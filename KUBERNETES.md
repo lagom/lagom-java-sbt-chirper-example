@@ -72,8 +72,17 @@ The `reactive-sandbox` includes development-grade (i.e. it will lose your data) 
 
 > Note that if you have an external Cassanda cluster, you can skip this step. You'll need to change the `cassandra_svc` variable (defined below) if this is the case.
 
+If your cluster has [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) enabled (most do), first we'll need to create Kubernetes service account and a role binding for tiller, Helm server:
+
 ```bash
-helm init
+kubectl -n kube-system create sa tiller
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+```
+
+Then we can install Helm to the cluster:
+
+```bash
+helm init --service-account tiller
 helm repo add lightbend-helm-charts https://lightbend.github.io/helm-charts
 helm update
 ```
@@ -120,6 +129,41 @@ sbt clean docker:publishLocal
 
 ```bash
 docker images
+```
+
+##### Configure RBAC
+
+> If your cluster has RBAC disabled you can skip this step.
+
+Most Lightbend Orchestration apps do service discovery using [akka-management](https://github.com/akka/akka-management), and for that to work they need permission to list pods running inside the app's namespace. We'll setup a Kubernetes Role and a RoleBinding for that. Put this in a file called `rbac.yml`:
+
+```
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-pods
+subjects:
+- kind: User
+  name: system:serviceaccount:default:default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+```
+
+Now create Role and RoleBinding resources:
+
+```
+kubectl apply -f rbac.yml
 ```
 
 ##### Deploy Projects
