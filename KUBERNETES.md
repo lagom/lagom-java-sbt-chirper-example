@@ -74,7 +74,7 @@ The `reactive-sandbox` includes development-grade (i.e. it will lose your data) 
 
 ```bash
 helm init
-helm repo add lightbend-helm-charts https://lightbend.github.io/helm-charts
+helm repo add lightbend-helm-charts https://repo.lightbend.com/helm-charts
 helm update
 ```
 
