@@ -12,7 +12,6 @@ scalaVersion in ThisBuild := "2.12.8"
 
 ThisBuild / scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
 ThisBuild /  javacOptions ++= List("-encoding", "UTF-8")
-ThisBuild /  javacOptions ++= List("-source", "1.8", "-target", "1.8")
 ThisBuild /  javacOptions ++= List("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
 
 // SCALA SUPPORT: Remove the line below
