@@ -5,6 +5,11 @@ jdk:
 - openjdk11
 script: ./sbt-build
 
+matrix:
+  allow_failures:
+    - jdk: openjdk11
+  fast_finish: true
+
 cache:
   directories:
     - $HOME/.ivy2/cache
