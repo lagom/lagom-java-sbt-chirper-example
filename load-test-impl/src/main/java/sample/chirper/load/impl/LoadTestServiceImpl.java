@@ -16,8 +16,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.inject.Inject;
-import play.Logger;
-import play.Logger.ALogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sample.chirper.activity.api.ActivityStreamService;
 import sample.chirper.chirp.api.Chirp;
 import sample.chirper.chirp.api.ChirpService;
@@ -39,7 +39,7 @@ public class LoadTestServiceImpl implements LoadTestService {
   private final ActivityStreamService activityService;
   private final ChirpService chirpService;
   private final Materializer materializer;
-  private final ALogger log = Logger.of(getClass());
+  private static final Logger log = LoggerFactory.getLogger(LoadTestServiceImpl.class);
 
   // to create "unique" user ids we prefix them with this, convenient
   // to not have overlapping user ids when running in dev mode
