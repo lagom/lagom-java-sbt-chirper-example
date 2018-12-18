@@ -10,6 +10,11 @@ organization in ThisBuild := "com.lightbend.lagom.sample.chirper"
 // the Scala version that will be used for cross-compiled libraries
 scalaVersion in ThisBuild := "2.12.8"
 
+ThisBuild / scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
+ThisBuild /  javacOptions ++= List("-encoding", "UTF-8")
+ThisBuild /  javacOptions ++= List("-source", "1.8", "-target", "1.8")
+ThisBuild /  javacOptions ++= List("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
+
 // SCALA SUPPORT: Remove the line below
 EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 
@@ -123,9 +128,9 @@ lazy val loadTestImpl = project("load-test-impl")
   .enablePlugins(LagomJava)
   .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi)
 
-def project(id: String) = Project(id, base = file(id))
-  .settings(javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"))
-  .settings(jacksonParameterNamesJavacSettings: _*) // applying it to every project even if not strictly needed.
+def project(id: String) = Project(id, base = file(id)).settings(
+  jacksonParameterNamesJavacSettings, // applying it to every project even if not strictly needed.
+)
 
 // See https://github.com/FasterXML/jackson-module-parameter-names
 lazy val jacksonParameterNamesJavacSettings = Seq(
