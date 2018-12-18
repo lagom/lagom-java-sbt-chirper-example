@@ -1,26 +1,25 @@
-language: scala
 sudo: false
+language: scala
 jdk:
-  - oraclejdk8
-# This skips the install step.
-# See https://docs.travis-ci.com/user/customizing-the-build#Skipping-the-Installation-Ste
-install: true
-script: $SCRIPT
-env:
-  matrix:
-    - SCRIPT="./sbt-build"
+- openjdk8
+- openjdk11
+script: ./sbt-build
+
+matrix:
+  allow_failures:
+    - jdk: openjdk11
+  fast_finish: true
+
 cache:
   directories:
-    - $HOME/.m2
     - $HOME/.ivy2/cache
     - $HOME/.nvm
-    - $HOME/.sbt/launchers
+    - $HOME/.sbt
+
 before_cache:
-  # Ensure changes to the cache aren't persisted
-  - rm -rf $HOME/.m2/repository/com/lightbend/lagom/sample/chirper
-  - rm -rf $HOME/.ivy2/cache/com/lightbend/lagom/sample/chirper
-  # Delete all ivydata files since ivy touches them on each build
-  - find $HOME/.ivy2/cache -name "ivydata-*.properties" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+  - find $HOME/.sbt  -name "*.lock"               -delete
+
 notifications:
   webhooks:
     urls:

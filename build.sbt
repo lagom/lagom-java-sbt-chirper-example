@@ -8,7 +8,11 @@ import com.typesafe.sbt.packager.docker._
 organization in ThisBuild := "com.lightbend.lagom.sample.chirper"
 
 // the Scala version that will be used for cross-compiled libraries
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.8"
+
+ThisBuild / scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
+ThisBuild /  javacOptions ++= List("-encoding", "UTF-8")
+ThisBuild /  javacOptions ++= List("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
 
 // SCALA SUPPORT: Remove the line below
 EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
@@ -17,26 +21,19 @@ lazy val buildVersion = sys.props.getOrElse("buildVersion", "1.0.0-SNAPSHOT")
 
 version in ThisBuild := buildVersion
 
-val dockerSettings = Seq(
-  dockerRepository := sys.props.get("dockerRepository"),
-  memory := 512 * 1024 * 1024,
-  cpu := 0.25
-)
-
 lazy val friendApi = project("friend-api")
   .settings(
     libraryDependencies += lagomJavadslApi
   )
 
 lazy val friendImpl = project("friend-impl")
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .settings(
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit
     )
   )
-  .settings(dockerSettings: _*)
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(friendApi)
 
@@ -49,7 +46,7 @@ lazy val chirpApi = project("chirp-api")
   )
 
 lazy val chirpImpl = project("chirp-impl")
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .settings(
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
@@ -58,7 +55,6 @@ lazy val chirpImpl = project("chirp-impl")
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .settings(dockerSettings: _*)
   .dependsOn(chirpApi)
 
 lazy val activityStreamApi = project("activity-stream-api")
@@ -68,17 +64,16 @@ lazy val activityStreamApi = project("activity-stream-api")
   .dependsOn(chirpApi)
 
 lazy val activityStreamImpl = project("activity-stream-impl")
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .settings(
     libraryDependencies ++= Seq(
       lagomJavadslTestKit
     )
   )
-  .settings(dockerSettings: _*)
   .dependsOn(activityStreamApi, chirpApi, friendApi)
 
 lazy val frontEnd = project("front-end")
-  .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)
+  .enablePlugins(PlayJava, LagomPlay)
   .disablePlugins(PlayLayoutPlugin)
   .settings(
     routesGenerator := InjectedRoutesGenerator,
@@ -120,11 +115,8 @@ lazy val frontEnd = project("front-end")
     WebpackKeys.envVars in webpack += "BUILD_SYSTEM" -> "sbt",
 
     // Remove to use Scala IDE
-    EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources),
-
-    httpIngressPaths := Seq("/")
+    EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
   )
-  .settings(dockerSettings: _*)
 
 lazy val loadTestApi = project("load-test-api")
   .settings(
@@ -132,13 +124,12 @@ lazy val loadTestApi = project("load-test-api")
   )
 
 lazy val loadTestImpl = project("load-test-impl")
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi)
-  .settings(dockerSettings: _*)
 
-def project(id: String) = Project(id, base = file(id))
-  .settings(javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"))
-  .settings(jacksonParameterNamesJavacSettings: _*) // applying it to every project even if not strictly needed.
+def project(id: String) = Project(id, base = file(id)).settings(
+  jacksonParameterNamesJavacSettings, // applying it to every project even if not strictly needed.
+)
 
 // See https://github.com/FasterXML/jackson-module-parameter-names
 lazy val jacksonParameterNamesJavacSettings = Seq(
