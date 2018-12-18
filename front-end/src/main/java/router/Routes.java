@@ -54,36 +54,32 @@ public class Routes implements Router {
     private Router buildRouter() {
         return this.routingDsl
                 // Index
-                .GET("/").routeTo(application::index)
-                .GET("/signup").routeTo(application::index)
-                .GET("/addFriend").routeTo(application::index)
-                .GET("/users/:id").routeTo(application::userStream)
-                .GET("/cb").routeTo(application::circuitBreaker)
+                .GET("/").routingTo((_req) -> application.index())
+                .GET("/signup").routingTo((_req) -> application.index())
+                .GET("/addFriend").routingTo((_req) -> application.index())
+                .GET("/users/:id").<String>routingTo((_req, userId) -> application.userStream(userId))
+                .GET("/cb").routingTo((_req) -> application.circuitBreaker())
 
                 // Assets
-                .GET("/webjars/_requirejs").routeAsync(() ->
+                .GET("/webjars/_requirejs").routingAsync((req) ->
                         requireJs.setup()
                                 .asJava()
-                                .apply(requestHeader())
+                                .apply(req)
                                 .run(materializer)
                 )
-                .GET("/assets/*file").routeAsync((String file) ->
+                .GET("/assets/*file").<String>routingAsync((req, file) ->
                         assets.at("/public", file, false)
                                 .asJava()
-                                .apply(requestHeader())
+                                .apply(req)
                                 .run(materializer)
                 )
-                .GET("/webjars/*file").routeAsync((String file) ->
+                .GET("/webjars/*file").<String>routingAsync((req, file) ->
                         webJars.at(file)
                                 .asJava()
-                                .apply(requestHeader())
+                                .apply(req)
                                 .run(materializer)
                 )
                 .build().asScala();
-    }
-
-    private Http.RequestHeader requestHeader() {
-        return Http.Context.current().request();
     }
 
     @Override
