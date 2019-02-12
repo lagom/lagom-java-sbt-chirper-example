@@ -1,14 +1,11 @@
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
+import java.nio.file.{Files, StandardCopyOption}
 
-import sbt.Resolver.bintrayRepo
 import com.typesafe.sbt.web.SbtWeb
-import com.typesafe.sbt.packager.docker._
 
 organization in ThisBuild := "com.lightbend.lagom.sample.chirper"
 
 // the Scala version that will be used for cross-compiled libraries
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.8"
 
 // SCALA SUPPORT: Remove the line below
 EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
@@ -19,8 +16,8 @@ version in ThisBuild := buildVersion
 
 val dockerSettings = Seq(
   dockerRepository := sys.props.get("dockerRepository"),
-  memory := 512 * 1024 * 1024,
-  cpu := 0.25
+  rpMemory := 512 * 1024 * 1024,
+  rpCpu := 0.25
 )
 
 lazy val friendApi = project("friend-api")
@@ -122,7 +119,7 @@ lazy val frontEnd = project("front-end")
     // Remove to use Scala IDE
     EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources),
 
-    httpIngressPaths := Seq("/")
+    rpHttpIngressPaths := Seq("/")
   )
   .settings(dockerSettings: _*)
 
