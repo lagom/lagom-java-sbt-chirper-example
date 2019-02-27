@@ -10,10 +10,6 @@ organization in ThisBuild := "com.lightbend.lagom.sample.chirper"
 // the Scala version that will be used for cross-compiled libraries
 scalaVersion in ThisBuild := "2.12.8"
 
-ThisBuild / scalacOptions ++= List("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
-ThisBuild /  javacOptions ++= List("-encoding", "UTF-8")
-ThisBuild /  javacOptions ++= List("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
-
 // SCALA SUPPORT: Remove the line below
 EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 
@@ -140,13 +136,25 @@ lazy val loadTestImpl = project("load-test-impl")
   .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi)
   .settings(dockerSettings: _*)
 
-def project(id: String) = Project(id, base = file(id)).settings(
-  jacksonParameterNamesJavacSettings, // applying it to every project even if not strictly needed.
-)
+
+// ----------------------------------------------------------------------
+
+def project(id: String) =
+  Project(id, base = file(id))
+    .settings(
+      jacksonParameterNamesJavacSettings // applying it to every project even if not strictly needed.
+    ).settings(
+    common
+  )
 
 // See https://github.com/FasterXML/jackson-module-parameter-names
 lazy val jacksonParameterNamesJavacSettings = Seq(
   javacOptions in compile += "-parameters"
+)
+
+
+def common = Seq(
+  javacOptions in (Compile,compile) ++= Seq("-encoding", "UTF-8", "-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
 )
 
 // do not delete database files on start
