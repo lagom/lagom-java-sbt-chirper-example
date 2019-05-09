@@ -1,3 +1,6 @@
+
+This sample application is archived. See https://github.com/lagom/lagom-samples for more Example projects showcasing Lagom usage.
+
 # lagom-java-sbt-chirper-example
 
 A Lagom Java example showcasing a Twitter-like application, [sbt](https://www.scala-sbt.org/) flavor.
